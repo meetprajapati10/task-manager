@@ -7,6 +7,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/reports", reportRoutes);
 
 // Serve static files from the uploads directory
 app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
