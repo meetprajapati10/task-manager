@@ -1,0 +1,57 @@
+import { useEffect, useState } from "react";
+import { UserContext } from "./UserContext";
+import axiosInstance from "@/utils/axiosInstance";
+import { API_PATHS } from "@/utils/apiPaths";
+
+const UserProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // New state to track loading
+
+  useEffect(() => {
+    console.log("useEffect called!!!!!");
+    if (user) return;
+
+    const accessToken = localStorage.getItem("token");
+    if (!accessToken) {
+      console.log("accestokeen block called!");
+
+      setLoading(false);
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const response = await axiosInstance.get(API_PATHS.AUTH.GET_PROFILE);
+        setUser(response.data);
+      } catch (error) {
+        console.error("User not authenticated", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [user]);
+
+  const updateUser = (userData) => {
+    console.log("updateUser called with:", userData);
+
+    setUser(userData);
+    localStorage.setItem("token", userData.token); // Save token
+    setLoading(false);
+  };
+
+  const clearUser = () => {
+    setUser(null);
+    localStorage.removeItem("token");
+    // setLoading(false);
+  };
+
+  return (
+    <UserContext.Provider value={{ user, loading, updateUser, clearUser }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+export default UserProvider;

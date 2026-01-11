@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import UserProvider from "./context/userContext.jsx";
 
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
@@ -15,7 +16,7 @@ import ViewTaskDetails from "./pages/User/ViewTaskDetails";
 
 function App() {
   return (
-    <div>
+    <UserProvider>
       <Router>
         <Routes>
           {/* Auth Routes */}
@@ -41,7 +42,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
-    </div>
+    </UserProvider>
   );
 }
 
