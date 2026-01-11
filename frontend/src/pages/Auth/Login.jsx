@@ -4,7 +4,10 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/lib/schema";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axiosInstance from "@/utils/axiosInstance";
+import { API_PATHS } from "@/utils/apiPaths";
+import { toast } from "sonner";
 
 import {
   Card,
@@ -22,9 +25,13 @@ import {
 } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   function toggleShowPassword() {
     setShowPassword(!showPassword);
@@ -38,9 +45,35 @@ const Login = () => {
     },
   });
 
-  function onSubmit(data) {
-    // Do something with the form values.
-    console.log(data);
+  async function onSubmit(data) {
+    setLoading(true);
+
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, data);
+
+      const { role, token } = response.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+
+        // Redirect to dashboard based on role
+        if (role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
+      }
+
+      toast.success("Login successful!");
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -103,8 +136,21 @@ const Login = () => {
                   </Field>
                 )}
               />
-              <Button type="submit" className="w-full">
-                LOGIN
+              <Button
+                type="submit"
+                disabled={loading}
+                className={`w-full ${
+                  loading ? "cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <Spinner />
+                    Loading...
+                  </>
+                ) : (
+                  "LOGIN"
+                )}
               </Button>
               <FieldDescription className="text-center font-medium">
                 Don't have an account?{" "}
