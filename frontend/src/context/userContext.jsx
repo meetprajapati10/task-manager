@@ -8,13 +8,10 @@ const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // New state to track loading
 
   useEffect(() => {
-    console.log("useEffect called!!!!!");
     if (user) return;
 
     const accessToken = localStorage.getItem("token");
     if (!accessToken) {
-      console.log("accestokeen block called!");
-
       setLoading(false);
       return;
     }
@@ -34,8 +31,6 @@ const UserProvider = ({ children }) => {
   }, [user]);
 
   const updateUser = (userData) => {
-    console.log("updateUser called with:", userData);
-
     setUser(userData);
     localStorage.setItem("token", userData.token); // Save token
     setLoading(false);

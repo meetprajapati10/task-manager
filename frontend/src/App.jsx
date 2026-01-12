@@ -1,5 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useContext } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Outlet,
+  Navigate,
+} from "react-router-dom";
 import UserProvider from "./context/userContext.jsx";
+import { UserContext } from "./context/UserContext.js";
 
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
@@ -40,6 +48,9 @@ function App() {
               element={<ViewTaskDetails />}
             />
           </Route>
+
+          {/* Root Route */}
+          <Route path="/" element={<Root />} />
         </Routes>
       </Router>
     </UserProvider>
@@ -47,3 +58,19 @@ function App() {
 }
 
 export default App;
+
+const Root = () => {
+  const { user, loading } = useContext(UserContext);
+
+  if (loading) return <Outlet />; // or a loading spinner
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (user.role === "admin") {
+    return <Navigate to="/admin/dashboard" />;
+  } else {
+    return <Navigate to="/user/dashboard" />;
+  }
+};

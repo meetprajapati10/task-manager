@@ -22,9 +22,11 @@ import {
 } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import ProfilePhotoSelector from "@/components/Inputs/ProfilePhotoSelector";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [profilePic, setProfilePic] = useState(null);
 
   function toggleShowPassword() {
     setShowPassword(!showPassword);
@@ -56,6 +58,8 @@ const SignUp = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)}>
+            <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
+
             <FieldGroup>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Controller
