@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "@/lib/schema";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   Card,
@@ -23,10 +23,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ProfilePhotoSelector from "@/components/Inputs/ProfilePhotoSelector";
+import { UserContext } from "@/context/UserContext";
+import uploadImage from "@/utils/uploadImage";
+import axiosInstance from "@/utils/axiosInstance";
+import { API_PATHS } from "@/utils/apiPaths";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [profilePic, setProfilePic] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const { updateUser } = useContext(UserContext);
 
   function toggleShowPassword() {
     setShowPassword(!showPassword);
@@ -42,9 +53,47 @@ const SignUp = () => {
     },
   });
 
-  function onSubmit(data) {
-    // Do something with the form values.
-    console.log(data);
+  async function onSubmit(data) {
+    setLoading(true);
+
+    let profileImageUrl = "";
+
+    try {
+      // Upload image if present
+      if (profilePic) {
+        const imageUploadRes = await uploadImage(profilePic);
+        profileImageUrl = imageUploadRes.imageUrl || "";
+      }
+
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        ...data,
+        profileImageUrl,
+      });
+
+      const { role, token } = response.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(response.data);
+
+        // Redirect to dashboard based on role
+        if (role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
+      }
+
+      toast.success("Account created successfully");
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -153,8 +202,21 @@ const SignUp = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full">
-                SIGN UP
+              <Button
+                type="submit"
+                disabled={loading}
+                className={`w-full my-4 ${
+                  loading ? "cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <Spinner />
+                    Loading...
+                  </>
+                ) : (
+                  "SIGN UP"
+                )}
               </Button>
 
               <FieldDescription className="text-center font-medium">
